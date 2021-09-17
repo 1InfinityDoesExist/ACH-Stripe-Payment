@@ -13,9 +13,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Charge;
 import com.stripe.model.Customer;
 import com.stripe.model.PaymentSource;
 import com.stripe.model.Token;
+import com.stripe.param.ChargeCreateParams;
 import com.stripe.param.CustomerCreateParams;
 
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +76,28 @@ public class CustomerService {
 		PaymentSource paymentSource = customer.getSources().create(source);
 
 		return paymentSource.getId();
+	}
+
+	/**
+	 * This method will deduct money from the default card. or source.
+	 * 
+	 * @param customerId
+	 * @param cardDetails
+	 * @return
+	 * @throws StripeException
+	 */
+	public String payment(String customerId, Map<String, Object> cardDetails) throws StripeException {
+
+		Stripe.apiKey = apiKey;
+		Customer customer = Customer.retrieve(customerId);
+
+		ChargeCreateParams params = ChargeCreateParams.builder().setAmount(500L).setCurrency("usd")
+				.setCustomer(customer.getId()).build();
+		Charge charge = Charge.create(params);
+
+		System.out.println(charge);
+		return "";
+
 	}
 
 }
