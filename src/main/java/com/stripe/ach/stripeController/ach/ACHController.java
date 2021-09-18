@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +30,16 @@ public class ACHController {
 			throws StripeException, JsonProcessingException, ParseException {
 
 		String response = achService.addBankAccount(customerID, bankAccount);
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ModelMap().addAttribute("PaymentSourceId", response));
+	}
+
+	@GetMapping("/verify/{customerID}/{bankAccountID}")
+	public ResponseEntity<?> verifyBankAccount(
+			@PathVariable(value = "bankAccountID", required = true) String bankAccountID,
+			@PathVariable(value = "customerID", required = true) String customerID)
+			throws StripeException, JsonProcessingException, ParseException {
+
+		String response = achService.verifyBankAccount(customerID, bankAccountID);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ModelMap().addAttribute("PaymentSourceId", response));
 
 	}
