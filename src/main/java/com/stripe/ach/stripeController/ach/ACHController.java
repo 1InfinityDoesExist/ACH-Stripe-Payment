@@ -44,4 +44,15 @@ public class ACHController {
 
 	}
 
+	@GetMapping("/change-default-source/{customerID}/{bankAccountID}")
+	public ResponseEntity<?> makeBankAccountDefaultSource(
+			@PathVariable(value = "bankAccountID", required = true) String bankAccountID,
+			@PathVariable(value = "customerID", required = true) String customerID)
+			throws StripeException, JsonProcessingException, ParseException {
+
+		String response = achService.makeBankAccountDefaultSource(customerID, bankAccountID);
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ModelMap().addAttribute("PaymentSourceId", response));
+
+	}
+
 }

@@ -19,6 +19,7 @@ import com.stripe.model.Customer;
 import com.stripe.model.PaymentSource;
 import com.stripe.model.PaymentSourceCollection;
 import com.stripe.model.Token;
+import com.stripe.param.CustomerUpdateParams;
 import com.stripe.param.PaymentSourceCollectionCreateParams;
 import com.stripe.param.TokenCreateParams;
 
@@ -86,6 +87,17 @@ public class ACHService {
 		com.stripe.model.BankAccount verifiedBankAccount = ba.verify(param);
 
 		return verifiedBankAccount.getId();
+
+	}
+
+	public String makeBankAccountDefaultSource(String customerID, String bankAccountID) throws StripeException {
+		Stripe.apiKey = apiKey;
+		Customer customer = Customer.retrieve(customerID);
+
+		CustomerUpdateParams customerUpdateParams = CustomerUpdateParams.builder().setDefaultSource(bankAccountID)
+				.build();
+		Customer updatedCustomer = customer.update(customerUpdateParams);
+		return updatedCustomer.getDefaultSource();
 
 	}
 }
