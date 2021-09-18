@@ -16,9 +16,12 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.Customer;
 import com.stripe.model.PaymentSource;
+import com.stripe.model.Source;
 import com.stripe.model.Token;
 import com.stripe.param.ChargeCreateParams;
 import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.PaymentSourceCollectionCreateParams;
+import com.stripe.param.TokenCreateParams;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,11 +35,8 @@ public class CustomerService {
 	public Customer createCustomer(Map<String, Object> customerParams) throws StripeException {
 		Stripe.apiKey = apiKey;
 
-		CustomerCreateParams params = CustomerCreateParams.builder().setEmail("jenny.rosen@example.com")
-				.setPaymentMethod("pm_1FWS6ZClCIKljWvsVCvkdyWg").setInvoiceSettings(CustomerCreateParams.InvoiceSettings
-						.builder().setDefaultPaymentMethod("pm_1FWS6ZClCIKljWvsVCvkdyWg").build())
-				.build();
-		Customer customer = Customer.create(customerParams);
+		CustomerCreateParams params = CustomerCreateParams.builder().setEmail("jenny.rosen@example.com").build();
+		Customer customer = Customer.create(params);
 		log.info("-----Customer Id :{}", customer.getId());
 		return customer;
 
@@ -79,7 +79,8 @@ public class CustomerService {
 	}
 
 	/**
-	 * This method will deduct money from the default card. or source.
+	 * This method will deduct money from the default card. or source (the default
+	 * one).
 	 * 
 	 * @param customerId
 	 * @param cardDetails
@@ -100,4 +101,41 @@ public class CustomerService {
 
 	}
 
+	/**
+	 * 
+	 * Tokenization is the process Stripe uses to collect sensitive card or bank
+	 * account details, or personally identifiable information (PII), directly from
+	 * your customers in a secure manner. A token representing this information is
+	 * returned to your server to use.
+	 * 
+	 * 
+	 * 
+	 * @return
+	 * 
+	 * @throws StripeException
+	 */
+	public String paymentUsingCard(String customerId, Map<String, Object> cardDetails) throws StripeException {
+		Stripe.apiKey = apiKey;
+		Customer customer = Customer.retrieve(customerId);
+
+		TokenCreateParams tokenParam = TokenCreateParams.builder()
+				.setCard(TokenCreateParams.Card.builder().putAllExtraParam(cardDetails).build()).build();
+
+		Token token = Token.create(tokenParam);
+		log.info("Token : {}", token);
+
+		PaymentSourceCollectionCreateParams pscc = PaymentSourceCollectionCreateParams.builder()
+				.setSource(token.getId()).build();
+
+		customer.getSources().create(pscc);
+
+		ChargeCreateParams params = ChargeCreateParams.builder().setAmount(500L).setCurrency("usd")
+				.setDescription("Testing Purpose").setStatementDescriptor("Still testing").setCustomer(customer.getId())
+				.build();
+		Charge charge = Charge.create(params);
+
+		log.info("Charge ID : {}", charge.getId());
+
+		return "Paid";
+	}
 }
