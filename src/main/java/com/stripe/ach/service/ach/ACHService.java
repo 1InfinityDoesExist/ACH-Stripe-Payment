@@ -1,5 +1,9 @@
 package com.stripe.ach.service.ach;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -64,5 +68,24 @@ public class ACHService {
 
 		log.info("-----PaymentSource Added ie. Bank Account for CustomerID : {} is {}", customerID, paymentSource);
 		return paymentSource.getId();
+	}
+
+	public String verifyBankAccount(String customerID, String bankAccountID) throws StripeException {
+		Stripe.apiKey = apiKey;
+		Customer customer = Customer.retrieve(customerID);
+
+		PaymentSource source = customer.getSources().retrieve(bankAccountID);
+
+		com.stripe.model.BankAccount ba = (com.stripe.model.BankAccount) source;
+		ArrayList<Integer> amounts = new ArrayList<>();
+		amounts.add(32);
+		amounts.add(45);
+
+		Map<String, Object> param = new HashMap<String, Object>();
+		param.put("amounts", amounts);
+		com.stripe.model.BankAccount verifiedBankAccount = ba.verify(param);
+
+		return verifiedBankAccount.getId();
+
 	}
 }
