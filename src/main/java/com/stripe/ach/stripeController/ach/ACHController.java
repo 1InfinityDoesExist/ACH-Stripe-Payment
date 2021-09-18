@@ -1,5 +1,7 @@
 package com.stripe.ach.stripeController.ach;
 
+import java.util.Map;
+
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,7 +42,7 @@ public class ACHController {
 			throws StripeException, JsonProcessingException, ParseException {
 
 		String response = achService.verifyBankAccount(customerID, bankAccountID);
-		return ResponseEntity.status(HttpStatus.CREATED).body(new ModelMap().addAttribute("PaymentSourceId", response));
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ModelMap().addAttribute("response", response));
 
 	}
 
@@ -49,10 +51,16 @@ public class ACHController {
 			@PathVariable(value = "bankAccountID", required = true) String bankAccountID,
 			@PathVariable(value = "customerID", required = true) String customerID)
 			throws StripeException, JsonProcessingException, ParseException {
-
 		String response = achService.makeBankAccountDefaultSource(customerID, bankAccountID);
-		return ResponseEntity.status(HttpStatus.CREATED).body(new ModelMap().addAttribute("PaymentSourceId", response));
-
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ModelMap().addAttribute("response", response));
 	}
 
+	@PostMapping("/charge/{customerID}")
+	public ResponseEntity<?> bankCharge(@RequestBody Map<String, Object> payment,
+			@PathVariable(value = "customerID", required = true) String customerID)
+			throws StripeException, JsonProcessingException, ParseException {
+
+		String response = achService.bankCharge(customerID);
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ModelMap().addAttribute("response", response));
+	}
 }

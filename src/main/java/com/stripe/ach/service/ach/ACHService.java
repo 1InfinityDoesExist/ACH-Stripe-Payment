@@ -15,10 +15,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.Stripe;
 import com.stripe.ach.model.BankAccount;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Charge;
 import com.stripe.model.Customer;
 import com.stripe.model.PaymentSource;
 import com.stripe.model.PaymentSourceCollection;
 import com.stripe.model.Token;
+import com.stripe.param.ChargeCreateParams;
 import com.stripe.param.CustomerUpdateParams;
 import com.stripe.param.PaymentSourceCollectionCreateParams;
 import com.stripe.param.TokenCreateParams;
@@ -87,7 +89,6 @@ public class ACHService {
 		com.stripe.model.BankAccount verifiedBankAccount = ba.verify(param);
 
 		return verifiedBankAccount.getId();
-
 	}
 
 	public String makeBankAccountDefaultSource(String customerID, String bankAccountID) throws StripeException {
@@ -98,6 +99,20 @@ public class ACHService {
 				.build();
 		Customer updatedCustomer = customer.update(customerUpdateParams);
 		return updatedCustomer.getDefaultSource();
+	}
 
+	/*
+	 * 
+	 * Amount should be amount * 100
+	 */
+	public String bankCharge(String customerID) throws StripeException {
+		Stripe.apiKey = apiKey;
+		Customer customer = Customer.retrieve(customerID);
+
+		ChargeCreateParams params = ChargeCreateParams.builder().setAmount(500L).setCurrency("usd")
+				.setCustomer(customer.getId()).build();
+		Charge charge = Charge.create(params);
+
+		return charge.getId();
 	}
 }
