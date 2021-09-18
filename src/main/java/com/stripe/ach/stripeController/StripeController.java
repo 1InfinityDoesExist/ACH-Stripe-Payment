@@ -72,4 +72,11 @@ public class StripeController {
 		String customerResponse = customerService.payment(customerId, cardDetails);
 		return ResponseEntity.status(HttpStatus.OK).body(customerResponse);
 	}
+
+	@PostMapping("/payment-using-card/{customerId}")
+	public ResponseEntity<?> paymentUisngCard(@PathVariable(value = "customerId", required = true) String customerId,
+			@RequestBody Map<String, Object> cardDetails) throws StripeException, ParseException {
+		String customerResponse = customerService.paymentUsingCard(customerId, cardDetails);
+		return ResponseEntity.status(HttpStatus.OK).body(customerResponse);
+	}
 }
